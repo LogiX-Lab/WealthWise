@@ -18,8 +18,10 @@ import {
   riskMetrics,
   marketIndicators
 } from '../data/portfolioData';
+import { formatCurrency as formatCurrencyUtil } from '../../currency';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+
 
 interface RiskMetrics {
   volatility: number;
@@ -41,11 +43,11 @@ interface Liability {
 
 interface Activity {
   type: string;
-  amount: string;
+  amount: number;
   date: string;
   status: string;
   category?: string;
-  balance?: string;
+  balance?: number;
 }
 
 // Extend RiskMetrics interface to include riskScore
@@ -56,15 +58,6 @@ interface RiskMetricsWithScore extends RiskMetrics {
 const Portfolio = () => {
   const liabilities = liabilitiesData as Liability[];
   const recentActivity = recentActivityData as Activity[];
-
-  // Format currency helper - Updated for INR
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0 // INR typically doesn't use decimals
-    }).format(value);
-  };
 
   // Animation variants
   const fadeInUp = {
@@ -102,7 +95,7 @@ const Portfolio = () => {
       return () => clearInterval(timer);
     }, [value]);
 
-    return formatCurrency(displayValue);
+    return formatCurrencyUtil(displayValue);
   };
 
   // Add riskScore calculation based on other metrics
@@ -284,7 +277,7 @@ const Portfolio = () => {
                     </span>
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 ml-4">
-                    {formatCurrency(asset.amount)}
+                    {formatCurrencyUtil(asset.amount)}
                   </div>
                 </div>
               ))}
@@ -344,7 +337,7 @@ const Portfolio = () => {
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Monthly Returns</p>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-                {formatCurrency(portfolioSummary.monthlyReturns)}
+                {formatCurrencyUtil(portfolioSummary.monthlyReturns)}
               </h3>
             </div>
             <div className="bg-blue-100 dark:bg-blue-900/20 p-3 rounded-lg">
@@ -433,10 +426,10 @@ const Portfolio = () => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500 dark:text-gray-400">
-                    {formatCurrency(goal.current)}
+                    {formatCurrencyUtil(goal.current)}
                   </span>
                   <span className="text-gray-900 dark:text-white">
-                    {formatCurrency(goal.target)}
+                    {formatCurrencyUtil(goal.target)}
                   </span>
                 </div>
               </div>
@@ -572,7 +565,7 @@ const Portfolio = () => {
             </div>
             <div className="flex items-center space-x-2">
               <div className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm">
-                Total Debt: {formatCurrency(liabilities.reduce((acc, l) => acc + l.amount, 0))}
+                Total Debt: {formatCurrencyUtil(liabilities.reduce((acc, l) => acc + l.amount, 0))}
               </div>
             </div>
           </div>
@@ -614,13 +607,13 @@ const Portfolio = () => {
                       <div className="text-sm">
                         <span className="text-gray-500 dark:text-gray-400">Monthly: </span>
                         <span className="font-medium text-gray-900 dark:text-white">
-                          {formatCurrency(liability.monthlyPayment)}
+                          {formatCurrencyUtil(liability.monthlyPayment)}
                         </span>
                       </div>
                       <div className="text-sm">
                         <span className="text-gray-500 dark:text-gray-400">Remaining: </span>
                         <span className="font-medium text-gray-900 dark:text-white">
-                          {formatCurrency(liability.amount - liability.paid)}
+                          {formatCurrencyUtil(liability.amount - liability.paid)}
                         </span>
                       </div>
                     </div>
@@ -656,11 +649,10 @@ const Portfolio = () => {
                 className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
               >
                 <div className="flex items-center space-x-4">
-                  <div className={`p-2 rounded-lg ${
-                    activity.amount.startsWith('+') 
-                      ? 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400' 
+                  <div className={`p-2 rounded-lg ${activity.amount >= 0
+                      ? 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400'
                       : 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
-                  }`}>
+                    }`}>
                     <DollarSign className="h-5 w-5" />
                   </div>
                   <div>
@@ -687,15 +679,15 @@ const Portfolio = () => {
                 </div>
                 <div className="text-right">
                   <p className={`text-sm font-medium ${
-                    activity.amount.startsWith('+') 
+                    activity.amount > 0 
                       ? 'text-green-600 dark:text-green-400' 
                       : 'text-red-600 dark:text-red-400'
                   }`}>
-                    {activity.amount}
+                    {activity.amount > 0 ? '+' : ''}{formatCurrencyUtil(activity.amount)}
                   </p>
                   {activity.balance && (
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Balance: {activity.balance}
+                      Balance: {formatCurrencyUtil(activity.balance)}
                     </p>
                   )}
                 </div>

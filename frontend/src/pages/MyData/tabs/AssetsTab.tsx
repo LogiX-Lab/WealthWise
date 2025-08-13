@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, Plus, Trash2, Edit2, X, Building2, Briefcase, Car, Landmark, Coins, CreditCard } from 'lucide-react';
+import Fraction from 'fraction.js';
 
 interface Asset {
   id: string;
@@ -164,13 +165,13 @@ export const AssetsTab = () => {
   };
 
   const getTotalAssetValue = () => {
-    return assets.reduce((total, asset) => total + asset.value, 0);
+    return assets.reduce((total, asset) => total.add(asset.value), new Fraction(0)).valueOf();
   };
 
   const getCategoryTotal = (category: Asset['category']) => {
     return assets
       .filter(asset => asset.category === category)
-      .reduce((total, asset) => total + asset.value, 0);
+      .reduce((total, asset) => total.add(asset.value), new Fraction(0)).valueOf();
   };
 
   const formatCurrency = (amount: number) => {

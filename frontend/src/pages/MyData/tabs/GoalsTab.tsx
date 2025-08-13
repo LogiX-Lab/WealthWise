@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Target, DollarSign, Home, Briefcase, GraduationCap, Car, Plus, Trash2, X, Edit2, LucideIcon, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatCurrency, parseCurrency, CURRENCY_SYMBOL } from '../../../../currency';
 
 interface Goal {
   id: string;
   name: string;
   icon: LucideIcon;
-  target: string;
-  current: string;
+  target: number;
+  current: number;
 }
 
 type IconType = keyof typeof availableIcons;
@@ -19,16 +20,6 @@ const availableIcons = {
   Car,
   Target
 } as const;
-
-// Add currency formatter
-const formatToINR = (amount: string | number) => {
-  const numericAmount = typeof amount === 'string' ? parseFloat(amount.replace(/[₹,]/g, '')) : amount;
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0
-  }).format(numericAmount);
-};
 
 export const GoalsTab = () => {
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
@@ -49,6 +40,9 @@ export const GoalsTab = () => {
       try {
         const parsedGoals = JSON.parse(savedGoals);
         const reconstitutedGoals = parsedGoals.map((goal: any) => ({
+          // This ensures backward compatibility with old string-based data
+          target: typeof goal.target === 'string' ? parseCurrency(goal.target) : goal.target,
+          current: typeof goal.current === 'string' ? parseCurrency(goal.current) : goal.current,
           ...goal,
           icon: availableIcons[goal.iconName as keyof typeof availableIcons]
         }));
@@ -94,8 +88,8 @@ export const GoalsTab = () => {
     setFormData({
       name: goal.name,
       icon: getIconForGoal(goal.icon),
-      target: goal.target.replace(/[₹,]/g, ''),
-      current: goal.current.replace(/[₹,]/g, '')
+      target: goal.target.toString(),
+      current: goal.current.toString()
     });
     setIsModalOpen(true);
   };
@@ -113,8 +107,8 @@ export const GoalsTab = () => {
       id: isEditing ? selectedGoal! : Math.random().toString(36).substr(2, 9),
       name: formData.name,
       icon: availableIcons[selectedIcon],
-      target: formatToINR(formData.target),
-      current: formatToINR(formData.current)
+      target: parseCurrency(formData.target),
+      current: parseCurrency(formData.current)
     };
 
     if (isEditing) {
@@ -132,10 +126,11 @@ export const GoalsTab = () => {
     });
   };
 
-  const calculateProgress = (current: string, target: string) => {
-    const currentValue = parseFloat(current.replace(/[₹,]/g, ''));
-    const targetValue = parseFloat(target.replace(/[₹,]/g, ''));
-    return ((currentValue / targetValue) * 100).toFixed(1);
+  const calculateProgress = (current: number, target: number): number => {
+    if (target === 0) {
+      return 0;
+    }
+    return (current / target) * 100;
   };
 
   const fillDemoData = () => {
@@ -143,32 +138,34 @@ export const GoalsTab = () => {
       {
         name: "Dream House",
         icon: "Home" as IconType,
-        target: "5000000",
-        current: "2000000"
+        target: 5000000,
+        current: 2000000
       },
       {
         name: "Higher Education",
         icon: "GraduationCap" as IconType,
-        target: "2500000",
-        current: "1000000"
+        target: 2500000,
+        current: 1000000
       },
       {
         name: "Startup Fund",
         icon: "Briefcase" as IconType,
-        target: "1000000",
-        current: "300000"
+        target: 1000000,
+        current: 300000
       },
       {
         name: "Luxury Car",
         icon: "Car" as IconType,
-        target: "3000000",
-        current: "500000"
+        target: 3000000,
+        current: 500000
       }
     ];
 
     const randomGoal = demoGoals[Math.floor(Math.random() * demoGoals.length)];
     setFormData(randomGoal);
   };
+
+  const getSelectedGoal = () => goals.find(g => g.id === selectedGoal);
 
   return (
     <motion.div 
@@ -202,11 +199,11 @@ export const GoalsTab = () => {
           </div>
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
             <p className="text-indigo-100">Active Goals</p>
-            <p className="text-3xl font-bold mt-1">{goals.filter(g => parseFloat(calculateProgress(g.current, g.target)) < 100).length}</p>
+            <p className="text-3xl font-bold mt-1">{goals.filter(g => calculateProgress(g.current, g.target) < 100).length}</p>
           </div>
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
             <p className="text-indigo-100">Completed Goals</p>
-            <p className="text-3xl font-bold mt-1">{goals.filter(g => parseFloat(calculateProgress(g.current, g.target)) >= 100).length}</p>
+            <p className="text-3xl font-bold mt-1">{goals.filter(g => calculateProgress(g.current, g.target) >= 100).length}</p>
           </div>
         </div>
       </div>
@@ -236,7 +233,7 @@ export const GoalsTab = () => {
             ) : (
               goals.map((goal) => {
                 const Icon = goal.icon;
-                    const progress = parseFloat(calculateProgress(goal.current, goal.target));
+                    const progress = calculateProgress(goal.current, goal.target);
                 return (
                       <motion.button
                     key={goal.id}
@@ -271,7 +268,7 @@ export const GoalsTab = () => {
                                 ></div>
                               </div>
                             </div>
-                            <span className="ml-2 text-gray-500 dark:text-gray-400">{progress}%</span>
+                            <span className="ml-2 text-gray-500 dark:text-gray-400">{progress.toFixed(1)}%</span>
                           </div>
                     </div>
                         <ChevronRight className={`h-5 w-5 text-gray-400 transition-transform ${
@@ -329,8 +326,8 @@ export const GoalsTab = () => {
                       <div className="mt-2 flex items-center">
                     <DollarSign className="h-5 w-5 text-green-500" />
                         <span className="text-2xl font-bold text-gray-900 dark:text-white ml-1">
-                      {goals.find(g => g.id === selectedGoal)?.current}
-                    </span>
+                          {formatCurrency(getSelectedGoal()?.current ?? 0)}
+                        </span>
                   </div>
                 </div>
 
@@ -339,8 +336,8 @@ export const GoalsTab = () => {
                       <div className="mt-2 flex items-center">
                     <Target className="h-5 w-5 text-indigo-500" />
                         <span className="text-2xl font-bold text-gray-900 dark:text-white ml-1">
-                      {goals.find(g => g.id === selectedGoal)?.target}
-                    </span>
+                          {formatCurrency(getSelectedGoal()?.target ?? 0)}
+                        </span>
                   </div>
                 </div>
               </div>
@@ -351,19 +348,19 @@ export const GoalsTab = () => {
                       <h4 className="text-lg font-medium text-gray-900 dark:text-white">Progress</h4>
                       <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                       {calculateProgress(
-                        goals.find(g => g.id === selectedGoal)?.current || '0',
-                        goals.find(g => g.id === selectedGoal)?.target || '1'
-                      )}%
+                        getSelectedGoal()?.current ?? 0,
+                        getSelectedGoal()?.target ?? 1
+                      ).toFixed(1)}%
                     </span>
                   </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ 
-                        width: `${calculateProgress(
-                          goals.find(g => g.id === selectedGoal)?.current || '0',
-                          goals.find(g => g.id === selectedGoal)?.target || '1'
-                        )}%` 
+                        width: `${Math.min(100, calculateProgress(
+                          getSelectedGoal()?.current ?? 0,
+                          getSelectedGoal()?.target ?? 1
+                        ))}%` 
                       }}
                         transition={{ duration: 1, ease: "easeOut" }}
                         className="bg-indigo-600 h-3 rounded-full"

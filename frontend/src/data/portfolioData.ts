@@ -74,19 +74,19 @@ export const liabilities = [
 export const recentActivity = [
   {
     type: 'Stock Purchase',
-    amount: '+ ₹50,000',
+    amount: 50000,
     date: '2024-01-25',
     status: 'Completed',
     category: 'HDFC Bank',
-    balance: '₹4,50,000'
+    balance: 450000
   },
   {
     type: 'SIP Investment',
-    amount: '+ ₹25,000',
+    amount: 25000,
     date: '2024-01-20',
     status: 'Completed',
     category: 'Mutual Funds',
-    balance: '₹4,00,000'
+    balance: 400000
   }
 ];
 

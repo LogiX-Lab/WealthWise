@@ -55,10 +55,10 @@ const MoneyPulse = () => {
     try {
       const searchTerm =
         category === "All"
-          ? "indian finance"
-          : `indian ${category.toLowerCase()}`;
+          ? "canada finance"
+          : `canada ${category.toLowerCase()}`;
       const response = await fetch(
-        `https://gnews.io/api/v4/search?q=${searchTerm}&lang=en&country=in&max=10&apikey=${
+        `https://gnews.io/api/v4/search?q=${searchTerm}&lang=en&country=ca&max=10&apikey=${
           import.meta.env.VITE_GNEWS_API_KEY
         }`
       );

@@ -1,15 +1,65 @@
 import React, { useState } from 'react';
 import { TrendingUp, DollarSign, BarChart2, PieChart, Target, Shield, Briefcase, ChevronRight, ArrowUpRight, ArrowDownRight, Building2, Landmark, Wallet } from 'lucide-react';
+import { formatCurrency } from '../../currency';
 
 interface Investment {
   symbol: string;
   name: string;
   type: string;
-  price: string;
+  price: number;
   change: number;
   riskLevel: 'Low' | 'Moderate' | 'High';
   expectedReturn: string;
   reason: string;
+}
+
+interface MutualFund {
+  name: string;
+  type: string;
+  nav: number;
+  yearReturn: string;
+  rating: number;
+  riskLevel: 'Low' | 'Moderate' | 'High';
+  category: string;
+}
+
+interface FixedDeposit {
+  name: string;
+  type: string;
+  bank: string;
+  interestRate: string;
+  tenure: string;
+  minAmount: number;
+  rating: number;
+  riskLevel: 'Low' | 'Moderate' | 'High';
+  category: string;
+  features: string[];
+}
+
+interface Bond {
+  name: string;
+  type: string;
+  issuer: string;
+  interestRate: string;
+  tenure: string;
+  minAmount: number;
+  rating: number;
+  riskLevel: 'Low' | 'Moderate' | 'High';
+  category: string;
+  features: string[];
+}
+
+interface RealEstate {
+  name: string;
+  type: string;
+  developer: string;
+  expectedReturn: string;
+  lockInPeriod: string;
+  minAmount: number;
+  rating: number;
+  riskLevel: 'Low' | 'Moderate' | 'High';
+  category: string;
+  features: string[];
 }
 
 const investments: Investment[] = [
@@ -17,7 +67,7 @@ const investments: Investment[] = [
     symbol: "HDFCBANK",
     name: "HDFC Bank Ltd.",
     type: "Large Cap Stock",
-    price: "₹1,450.25",
+    price: 1450.25,
     change: 2.5,
     riskLevel: "Low",
     expectedReturn: "12-15%",
@@ -27,7 +77,7 @@ const investments: Investment[] = [
     symbol: "NIFTYBEES",
     name: "Nippon India Nifty 50 BeES",
     type: "Index ETF",
-    price: "₹235.75",
+    price: 235.75,
     change: 1.2,
     riskLevel: "Moderate",
     expectedReturn: "10-12%",
@@ -37,7 +87,7 @@ const investments: Investment[] = [
     symbol: "TCS",
     name: "Tata Consultancy Services",
     type: "Large Cap Stock",
-    price: "₹3,842.50",
+    price: 3842.50,
     change: -0.8,
     riskLevel: "Low",
     expectedReturn: "15-18%",
@@ -47,7 +97,7 @@ const investments: Investment[] = [
     symbol: "PPLPHARMA",
     name: "Parabolic Drugs",
     type: "Small Cap Stock",
-    price: "₹82.30",
+    price: 82.30,
     change: 4.5,
     riskLevel: "High",
     expectedReturn: "25-30%",
@@ -55,11 +105,11 @@ const investments: Investment[] = [
   }
 ];
 
-const mutualFunds = [
+const mutualFunds: MutualFund[] = [
   {
     name: "Mirae Asset Large Cap Fund",
     type: "Large Cap Fund",
-    nav: "₹95.25",
+    nav: 95.25,
     yearReturn: "15.8%",
     rating: 5,
     riskLevel: "Moderate",
@@ -68,7 +118,7 @@ const mutualFunds = [
   {
     name: "SBI Small Cap Fund",
     type: "Small Cap Fund",
-    nav: "₹125.40",
+    nav: 125.40,
     yearReturn: "22.5%",
     rating: 4,
     riskLevel: "High",
@@ -77,7 +127,7 @@ const mutualFunds = [
   {
     name: "ICICI Pru Balanced Advantage",
     type: "Hybrid Fund",
-    nav: "₹55.80",
+    nav: 55.80,
     yearReturn: "12.4%",
     rating: 5,
     riskLevel: "Moderate",
@@ -85,14 +135,14 @@ const mutualFunds = [
   }
 ];
 
-const fixedDeposits = [
+const fixedDeposits: FixedDeposit[] = [
   {
     name: "SBI Special FD",
     type: "Fixed Deposit",
     bank: "State Bank of India",
     interestRate: "7.10%",
     tenure: "2-3 years",
-    minAmount: "₹10,000",
+    minAmount: 10000,
     rating: 5,
     riskLevel: "Low",
     category: "Bank FD",
@@ -104,7 +154,7 @@ const fixedDeposits = [
     bank: "HDFC Bank",
     interestRate: "7.35%",
     tenure: "3-5 years",
-    minAmount: "₹25,000",
+    minAmount: 25000,
     rating: 4,
     riskLevel: "Low",
     category: "Corporate FD",
@@ -116,7 +166,7 @@ const fixedDeposits = [
     bank: "ICICI Bank",
     interestRate: "6.90%",
     tenure: "5 years",
-    minAmount: "₹15,000",
+    minAmount: 15000,
     rating: 5,
     riskLevel: "Low",
     category: "Tax Saving FD",
@@ -124,14 +174,14 @@ const fixedDeposits = [
   }
 ];
 
-const bonds = [
+const bonds: Bond[] = [
   {
     name: "RBI Floating Rate Bonds",
     type: "Government Bond",
     issuer: "Reserve Bank of India",
     interestRate: "7.15%",
     tenure: "7 years",
-    minAmount: "₹1,000",
+    minAmount: 1000,
     rating: 5,
     riskLevel: "Low",
     category: "Sovereign Bond",
@@ -143,7 +193,7 @@ const bonds = [
     issuer: "National Highways Authority",
     interestRate: "5.75%",
     tenure: "10 years",
-    minAmount: "₹10,000",
+    minAmount: 10000,
     rating: 4,
     riskLevel: "Low",
     category: "Tax-Free Bond",
@@ -155,7 +205,7 @@ const bonds = [
     issuer: "Multiple Companies",
     interestRate: "8.50%",
     tenure: "3-5 years",
-    minAmount: "₹100,000",
+    minAmount: 100000,
     rating: 4,
     riskLevel: "Moderate",
     category: "Corporate Bond",
@@ -163,14 +213,14 @@ const bonds = [
   }
 ];
 
-const realEstate = [
+const realEstate: RealEstate[] = [
   {
     name: "Commercial REITs",
     type: "REIT",
     developer: "Embassy Office Parks",
     expectedReturn: "8-10%",
     lockInPeriod: "None",
-    minAmount: "₹50,000",
+    minAmount: 50000,
     rating: 5,
     riskLevel: "Moderate",
     category: "Commercial",
@@ -182,7 +232,7 @@ const realEstate = [
     developer: "HDFC Property Fund",
     expectedReturn: "12-15%",
     lockInPeriod: "3 years",
-    minAmount: "₹200,000",
+    minAmount: 200000,
     rating: 4,
     riskLevel: "High",
     category: "Residential",
@@ -194,7 +244,7 @@ const realEstate = [
     developer: "IndoSpace Logistics",
     expectedReturn: "9-11%",
     lockInPeriod: "None",
-    minAmount: "₹100,000",
+    minAmount: 100000,
     rating: 4,
     riskLevel: "Moderate",
     category: "Industrial",
@@ -375,7 +425,7 @@ const Recommendations = () => {
                 <div className="flex justify-between items-center mb-3">
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Current Price</p>
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{investment.price}</p>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatCurrency(investment.price, 2)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Expected Return</p>
@@ -428,7 +478,7 @@ const Recommendations = () => {
                 <div className="flex justify-between items-center mb-3">
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">NAV</p>
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{fund.nav}</p>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatCurrency(fund.nav, 2)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">1Y Return</p>
@@ -495,7 +545,7 @@ const Recommendations = () => {
                     </div>
                     <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
                       <p className="text-sm text-gray-500 dark:text-gray-400">Min Amount</p>
-                      <p className="text-lg font-bold text-gray-900 dark:text-white">{fd.minAmount}</p>
+                      <p className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(fd.minAmount)}</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -555,7 +605,7 @@ const Recommendations = () => {
                     </div>
                     <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
                       <p className="text-sm text-gray-500 dark:text-gray-400">Min Amount</p>
-                      <p className="text-lg font-bold text-gray-900 dark:text-white">{bond.minAmount}</p>
+                      <p className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(bond.minAmount)}</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -615,7 +665,7 @@ const Recommendations = () => {
                     </div>
                     <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
                       <p className="text-sm text-gray-500 dark:text-gray-400">Min Amount</p>
-                      <p className="text-lg font-bold text-gray-900 dark:text-white">{property.minAmount}</p>
+                      <p className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(property.minAmount)}</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
